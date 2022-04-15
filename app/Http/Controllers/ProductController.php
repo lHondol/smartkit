@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    private $toSelect = ['id', 'name', 'price', 'weight', 'stock'];
+
     public function add(Request $req)
     {
         $req->validate([
@@ -26,7 +28,7 @@ class ProductController extends Controller
         $product->save();
 
         return response()->json(
-            ["message" => "product created"]
+            ["message" => "Product created successfully"]
         );
     }
 
@@ -42,7 +44,7 @@ class ProductController extends Controller
         $product = Product::find($req->id);
         if ($product == null) {
             return response()->json(
-                ["message" => "product not found"]
+                ["message" => "Product not found"]
             );
         }
 
@@ -53,7 +55,7 @@ class ProductController extends Controller
         $product->save();
 
         return response()->json(
-            ["message" => "product updated"]
+            ["message" => "Product updated successfully"]
         );
     }
 
@@ -62,20 +64,21 @@ class ProductController extends Controller
         $product = Product::find($req->id);
         if ($product == null) {
             return response()->json(
-                ["message" => "product not found"]
+                ["message" => "Product not found"]
             );
         }
 
         $product->delete();
 
         return response()->json(
-            ["message" => "product deleted"]
+            ["message" => "Product deleted successfully"]
         );
     }
 
     public function all()
     {
-        $products = Product::all();
+        $products = Product::select($this->toSelect)
+        ->paginate(10);
         return response()->json([
             "data" => $products
         ]);
@@ -83,7 +86,9 @@ class ProductController extends Controller
 
     public function get(Request $req)
     {
-        $product = Product::find($req->id);
+        $product = Product::find($req->id)
+        ->select($this->toSelect)
+        ->first();
         return response()->json([
             "data" => $product
         ]);

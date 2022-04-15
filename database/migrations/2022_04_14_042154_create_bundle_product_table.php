@@ -14,7 +14,6 @@ class CreateBundleProductTable extends Migration
     public function up()
     {
         Schema::create('bundle_product', function (Blueprint $table) {
-            $table->uuid('id')->primary()->unique();
             $table->foreignUuid('bundle_id')
                 ->constrained()
                 ->onDelete('cascade')

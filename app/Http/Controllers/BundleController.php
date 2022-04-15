@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 class BundleController extends Controller
 {
+    private $toSelect = ['id', 'name', 'weight', 'stock', 'price'];
+
     public function add(Request $req)
     {
         $req->validate([
@@ -43,18 +45,17 @@ class BundleController extends Controller
         $bundle->price = $calculated_price;
         $bundle->save();
 
-        for ($index = 0; $index < count($products); $index++) {
-            $bundle_product = new BundleProduct();
-            $bundle_product->id = Uuid::uuid();
-            $bundle_product->bundle_id = $bundle->id;
-            $bundle_product->product_id = $products[$index];
-            $bundle_product->quantity = $quantities[$index];
-            $bundle_product->save();
-        }
+        $products = collect($products)->mapWithKeys(function($product, $index) use ($quantities) {
+            return [$product => [
+                    'quantity'  => $quantities[$index]
+                ],
+            ];
+        })->all();
 
+        $bundle->products()->attach($products);
 
         return response()->json(
-            ["message" => "bundle created"]
+            ["message" => "Bundle created successfully"]
         );
     }
 
@@ -72,7 +73,13 @@ class BundleController extends Controller
         $quantities = $req->quantities;
 
         $bundle = Bundle::find($req->id);
-        $bundle->id = Uuid::uuid();
+        if ($bundle == null) {
+            return response()->json(
+                ["message" => "Bundle not found"]
+            );
+        }
+
+
         $bundle->name = $req->name;
         $bundle->weight = $req->weight;
 
@@ -91,18 +98,17 @@ class BundleController extends Controller
         $bundle->price = $calculated_price;
         $bundle->save();
 
-        for ($index = 0; $index < count($products); $index++) {
-            $bundle_product = new BundleProduct();
-            $bundle_product->id = Uuid::uuid();
-            $bundle_product->bundle_id = $bundle->id;
-            $bundle_product->product_id = $products[$index];
-            $bundle_product->quantity = $quantities[$index];
-            $bundle_product->save();
-        }
+        $products = collect($products)->mapWithKeys(function($product, $index) use ($quantities) {
+            return [$product => [
+                    'quantity'  => $quantities[$index]
+                ],
+            ];
+        })->all();
 
+        $bundle->products()->sync($products);
 
         return response()->json(
-            ["message" => "bundle updated"]
+            ["message" => "Bundle updated successfully"]
         );
     }
 
@@ -111,22 +117,22 @@ class BundleController extends Controller
         $bundle = Bundle::find($req->id);
         if ($bundle == null) {
             return response()->json(
-                ["message" => "bundle not found"]
+                ["message" => "Bundle not found"]
             );
         }
 
         $bundle->delete();
 
         return response()->json(
-            ["message" => "bundle deleted"]
+            ["message" => "Bundle deleted successfully"]
         );
     }
 
     public function all()
     {
-        $bundles = Bundle::select(['id', 'name', 'weight', 'stock', 'price'])
+        $bundles = Bundle::select($this->toSelect)
             ->with('products')
-            ->get();
+            ->paginate(5);
         return response()->json([
             "data" => $bundles
         ]);
@@ -135,8 +141,9 @@ class BundleController extends Controller
     public function get(Request $req)
     {
         $bundle = Bundle::find($req->id)
-            ->select(['id', 'name', 'weight', 'stock', 'price'])
-            ->with('products')->first();
+            ->select($this->toSelect)
+            ->with('products')
+            ->first();
         return response()->json([
             "data" => $bundle
         ]);

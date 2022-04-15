@@ -13,12 +13,14 @@ class Bundle extends Model
         'id' => 'string'
     ];
 
+    private $toSelect = ['product_id', 'name', 'quantity'];
+
     protected $hidden = ['pivot'];
 
     protected $keyType = 'string';
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'bundle_product')->select(['product_id', 'name', 'quantity']);
+        return $this->belongsToMany(Product::class, 'bundle_product')->select($this->toSelect);
     }
 }

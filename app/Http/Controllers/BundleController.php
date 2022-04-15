@@ -140,7 +140,8 @@ class BundleController extends Controller
 
     public function get(Request $req)
     {
-        $bundle = Bundle::find($req->id, $this->toSelect)
+        $bundle = Bundle::find($req->id)
+            ->select($this->toSelect)
             ->with('products')
             ->first();
         return response()->json([

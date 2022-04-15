@@ -17,7 +17,6 @@ class BundleController extends Controller
         $req->validate([
             'name' => 'required',
             'weight' => 'required',
-            'stock' => 'required',
             'products.*' => 'required',
             'quantities.*' => 'required'
         ]);
@@ -64,7 +63,6 @@ class BundleController extends Controller
         $req->validate([
             'name' => 'required',
             'weight' => 'required',
-            'stock' => 'required',
             'products.*' => 'required',
             'quantities.*' => 'required'
         ]);

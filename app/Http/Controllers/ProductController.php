@@ -86,9 +86,9 @@ class ProductController extends Controller
 
     public function get(Request $req)
     {
-        $product = Product::find($req->id)
-        ->select($this->toSelect)
-        ->first();
+        $product = Product::find($req->id);
+        // ->select($this->toSelect)
+        // ->first();
         return response()->json([
             "data" => $product
         ]);
